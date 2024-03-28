@@ -451,7 +451,7 @@ resource "aws_iam_role" "lb_controller_role" {
     "Statement" = [{
       "Effect"    = "Allow",
       "Principal" = {
-        "Federated" = "arn:aws:iam::5${data.aws_caller_identity.current.account_id}:oidc-provider/${module.eks.oidc_provider}"
+        "Federated" = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${module.eks.oidc_provider}"
       },
       "Action"    = "sts:AssumeRoleWithWebIdentity",
       "Condition" = {
