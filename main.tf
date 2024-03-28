@@ -197,7 +197,7 @@ resource "aws_iam_policy" "lb_controller_policy" {
   name        = "lb-controller-policy"
   description = "Policy for Load Balancer Controller"
 
-  policy = <<EOF
+ policy = <<EOF
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -238,7 +238,9 @@ resource "aws_iam_policy" "lb_controller_policy" {
                 "elasticloadbalancing:DescribeTargetGroups",
                 "elasticloadbalancing:DescribeTargetGroupAttributes",
                 "elasticloadbalancing:DescribeTargetHealth",
-                "elasticloadbalancing:DescribeTags"
+                "elasticloadbalancing:DescribeTags",
+                "elasticloadbalancing:DescribeTrustStores"
+
             ],
             "Resource": "*"
         },
@@ -438,9 +440,11 @@ resource "aws_iam_policy" "lb_controller_policy" {
             "Resource": "*"
         }
     ]
+
 }
 EOF
 }
+
 
 
 
