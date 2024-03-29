@@ -183,10 +183,12 @@ output "cluster_tls_certificate_sha1_fingerprint" {
   value       = module.eks.cluster_tls_certificate_sha1_fingerprint
 }
 
+
+
 module "aws_load_balancer_controller_irsa_role" {
   source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   role_name = "aws-load-balancer-controller"
-  attach_aws-load-balancer-controller_policy = true 
+  attach_load_balancer_controller_policy = true
 
   oidc_providers = {
     main = {
@@ -195,6 +197,7 @@ module "aws_load_balancer_controller_irsa_role" {
     }
   }
 }
+
 
 resource "kubernetes_service_account" "aws_load_balancer_controller" {
   metadata {
