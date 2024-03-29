@@ -209,7 +209,7 @@ resource "kubernetes_service_account" "aws_load_balancer_controller" {
       "app.kubernetes.io/component" = "controller"
     }
     annotations = {
-      "eks.amazonaws.com/role-arn" = aws_iam_role.lb_controller_role.arn
+      "eks.amazonaws.com/role-arn" = aws_iam_role.aws-load-balancer-controller_role.arn
       "eks.amazonaws.com/sts-regional-endpoints" = "true"
     }
   }
