@@ -104,9 +104,7 @@ module "ebs_csi_irsa" {
     }
   }
 
-  tags = {
-    Environment = local.environment
-  }
+
 }
 
 
