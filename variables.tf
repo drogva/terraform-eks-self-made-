@@ -24,36 +24,4 @@ variable "CREDENTIAL_FILES" {
 }
 
 
-variable "oidc_provider" {
-  description = "The OpenID Connect identity provider (issuer URL without leading `https://`)"
-  type        = string
-}
-
-variable "oidc_provider_arn" {
-  description = "The ARN of the OIDC Provider if `enable_irsa = true`"
-  type        = string
-}
-
-
-
-
-################################################################################
-# General Variables from root module
-################################################################################
-
-
-variable "env_name" {
-  type    = string
-}
-
-
-################################################################################
-# Variables from other Modules
-################################################################################
-
-variable "vpc_id" {
-  description = "VPC ID which Load balancers will be  deployed in"
-  type = string
-}
-
 
