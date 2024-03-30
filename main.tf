@@ -91,36 +91,40 @@ resource "aws_iam_role_policy_attachment" "example-AmazonEKSServicePolicy" {
   role       = aws_iam_role.example.name
 }
 
-data "aws_iam_policy" "ebs_csi_policy" {
-  arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+module "ebs_csi_irsa" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+
+  role_name = "ebs-csi"
+  attach_ebs_csi_policy = true
+
+  oidc_providers = {
+    main = {
+      provider_arn               = module.eks.oidc_provider_arn
+      namespace_service_accounts = ["kube-system:ebs-csi-controller-sa"]
+    }
+  }
+
+  tags = {
+    Environment = local.environment
+  }
 }
 
-resource "aws_iam_role" "ebs_csi_role" {
-  name = "AmazonEKSTFEBSCSIRole-${module.eks.cluster_name}"
 
-  assume_role_policy = jsonencode({
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Effect": "Allow",
-        "Principal": {
-          "Federated": "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${module.eks.oidc_provider}"
-        },
-        "Action": "sts:AssumeRoleWithWebIdentity",
-        "Condition": {
-          "StringEquals": {
-            "${module.eks.oidc_provider}:aud": "sts.amazonaws.com",
-            "${module.eks.oidc_provider}:sub": "system:serviceaccount:kube-system:ebs-csi-controller-sa"
-          }
-        }
-      }
-    ]
-  })
-}
+resource "kubernetes_service_account" "ebs_csi_irsa" {
+  metadata {
+    name      = "ebs_csi_irsa-sa"
+    namespace = "kube-system"
 
-resource "aws_iam_role_policy_attachment" "ebs_csi_policy_attachment" {
-  role       = aws_iam_role.ebs_csi_role.name
-  policy_arn = data.aws_iam_policy.ebs_csi_policy.arn
+    labels = {
+      "app.kubernetes.io/name"      = "ebs_csi_irsa"
+      "app.kubernetes.io/component" = "controller"
+    }
+    annotations = {
+      "eks.amazonaws.com/role-arn" = module .ebs_csi_irsa.iam_role_arn
+      "eks.amazonaws.com/sts-regional-endpoints" = "true"
+    }
+  }
+  depends_on = [module.eks]
 }
 
 
