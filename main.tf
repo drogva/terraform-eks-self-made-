@@ -110,7 +110,7 @@ module "ebs_csi_irsa" {
 
 resource "kubernetes_service_account" "ebs_csi_irsa" {
   metadata {
-    name      = "ebs_csi_irsa-sa"
+    name      = "ebs-csi-controller-sa"
     namespace = "kube-system"
 
     labels = {
