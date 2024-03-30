@@ -110,7 +110,7 @@ resource "aws_iam_role" "ebs_csi_role" {
         "Condition": {
           "StringEquals": {
             "${module.eks.oidc_provider}:aud": "sts.amazonaws.com",
-            "${module.eks.oidc_provider}}:sub": "system:serviceaccount:kube-system:ebs-csi-controller-sa"
+            "${module.eks.oidc_provider}:sub": "system:serviceaccount:kube-system:ebs-csi-controller-sa"
           }
         }
       }
