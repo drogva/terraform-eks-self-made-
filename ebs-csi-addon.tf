@@ -10,7 +10,7 @@ module "ebs_csi_irsa" {
       namespace_service_accounts = ["kube-system:ebs-csi-controller-sa"]
     }
   }
-
+}
 
 resource "aws_eks_addon" "ebs-csi" {
   cluster_name             = module.eks.cluster_name
