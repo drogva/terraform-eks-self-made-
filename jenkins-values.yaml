@@ -1,0 +1,14 @@
+controller:
+  serviceType: LoadBalancer
+  startupProbe:
+    enabled: true
+    failureThreshold: 300
+    periodSeconds: 300
+  jenkinsUriPrefix: "/jenkins"
+persistence:
+  enabled: true
+  existingClaim: ${pvc_name}
+  storageClass: gp2
+  size: 30Gi
+  accessMode: ReadWriteOnce
+
