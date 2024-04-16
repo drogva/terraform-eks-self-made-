@@ -211,7 +211,7 @@ EOF
 }
 
 resource "null_resource" "apply_kubernetes_manifest_ingress" {
-  depends_on = [null_resource.create_jenkins_namespace, local_file.ingress_yaml]
+  depends_on = [null_resource.create_jenkins_namespace, local_file.ingress-jenkins_yaml]
 
   provisioner "local-exec" {
     command = "kubectl apply -f ${path.module}/ingress-jenkins_yaml -n jenkins"
