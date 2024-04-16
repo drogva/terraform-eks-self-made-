@@ -308,7 +308,7 @@ module "argo" {
 
   app = {
     name          = "argocd"
-    version       = "5.34.5"
+    version       = "6.7.12"
     chart         = "argo-cd"
     force_update  = true
     wait          = false
