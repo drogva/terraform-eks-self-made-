@@ -171,7 +171,7 @@ module "jenkins" {
 
 
 
-resource "local_file" "ingress_yaml" {
+resource "local_file" "ingress-jenkins_yaml" {
   depends_on = [null_resource.create_jenkins_namespace, module.jenkins]
 
   content  = <<EOF
@@ -207,14 +207,14 @@ spec:
               number: 8080
 EOF
 
-  filename = "${path.module}/ingress_yaml"
+  filename = "${path.module}/ingress-jenkins_yaml"
 }
 
 resource "null_resource" "apply_kubernetes_manifest_ingress" {
   depends_on = [null_resource.create_jenkins_namespace, local_file.ingress_yaml]
 
   provisioner "local-exec" {
-    command = "kubectl apply -f ${path.module}/ingress_yaml -n jenkins"
+    command = "kubectl apply -f ${path.module}/ingress-jenkins_yaml -n jenkins"
   }
 }
 
