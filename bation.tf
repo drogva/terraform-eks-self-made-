@@ -84,7 +84,7 @@ EOF
 }
 
 resource "null_resource" "apply_kubernetes_manifest" {
-  depends_on = [null_resource.create_jenkins_namespace, local_file.ebs_volume_yaml]
+  depends_on = [null_resource.create_jenkins_namespace, local_file.ebs_volume_jenkins_yaml]
 
   provisioner "local-exec" {
     command = "kubectl apply -f ${path.module}/ebs-volume-jenkins.yaml -n jenkins"
@@ -113,7 +113,7 @@ EOF
 }
 
 resource "null_resource" "apply_kubernetes_manifest_pvc" {
-  depends_on = [null_resource.create_jenkins_namespace, local_file.ebs_volume_yaml_pvc]
+  depends_on = [null_resource.create_jenkins_namespace, local_file.ebs_volume_yaml-jenkins_pvc]
 
   provisioner "local-exec" {
     command = "kubectl apply -f ${path.module}/ebs-volume_pvc-jenkins.yaml -n jenkins"
