@@ -24,4 +24,18 @@ variable "CREDENTIAL_FILES" {
 }
 
 
+variable "jenkins_pvc" {
+  description = "jenkins_pvc"
+  type        = string
+   default     = "jenkins-pvc"
+}
+
+
+variable "argo-pvc" {
+  description = "argo-pvc"
+  type        = string
+   default     = "argo-pvc"
+}
+
+
 
