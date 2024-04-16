@@ -393,13 +393,6 @@ resource "null_resource" "apply_kubernetes_manifest_ingress-argo" {
 
 
 
-resource "null_resource" "patch_argo_accounts" {
-  depends_on = [null_resource.create_argo_namespace, null_resource.apply_kubernetes_manifest_ingress-argo]
-  provisioner "local-exec" {
-    command = "kubectl patch configmap argocd-cm -n argocd --type merge -p '{\"data\":{\"accounts.argo\":\"apiKey\"}}'"
-
-  }
-}
 
 resource "null_resource" "patch_argo_basehref" {
   depends_on = [null_resource.create_argo_namespace, null_resource.apply_kubernetes_manifest_ingress-argo]
@@ -424,10 +417,18 @@ resource "null_resource" "patch_argo_rootpath" {
 
 
 resource "null_resource" "restart_argo_deployments" {
-  depends_on = [null_resource.create_argo_namespace,null_resource.patch_argo_accounts]
+  depends_on = [null_resource.create_argo_namespace,null_resource.patch_argo_rootpath]
   provisioner "local-exec" {
     command = "kubectl rollout restart deployments --namespace argocd"
 
+
+  }
+}
+
+resource "null_resource" "patch_argo_accounts" {
+  depends_on = [null_resource.create_argo_namespace, null_resource.restart_argo_deployments]
+  provisioner "local-exec" {
+    command = "kubectl patch configmap argocd-cm -n argocd --type merge -p '{\"data\":{\"accounts.argo\":\"apiKey\"}}'"
 
   }
 }
@@ -437,9 +438,8 @@ resource "null_resource" "restart_argo_deployments" {
 
 
 
-
 resource "local_file" "argocd-rbac" {
-  depends_on = [null_resource.create_argo_namespace, local_file.ingress-argo_yaml, null_resource.restart_argo_deployments]
+  depends_on = [null_resource.create_argo_namespace, local_file.ingress-argo_yaml, null_resource.patch_argo_accounts]
   filename = "${path.module}/argocd-rbac.yml"
   content = <<-EOT
 
@@ -468,3 +468,4 @@ resource "null_resource" "apply_argocd_rbac" {
 
   }
 }
+
