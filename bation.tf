@@ -24,11 +24,11 @@ resource "null_resource" "update-kubeconfig" {
   }
 }
 
-resource "aws_ebs_volume" "example" {
+resource "aws_ebs_volume" "jenkins" {
   availability_zone = "ap-northeast-2a"
   size              = 10
   tags = {
-    Name = "example-volume"
+    Name = "jenkins-volume"
   }
 }
 
@@ -36,12 +36,12 @@ resource "aws_ebs_volume" "argo" {
   availability_zone = "ap-northeast-2c"
   size              = 30
   tags = {
-    Name = "example-volume-argo"
+    Name = "volume-argo"
   }
 }
 
 output "ebs_volume_id" {
-  value = aws_ebs_volume.example.id
+  value = aws_ebs_volume.jenkins.id
 }
 
 resource "null_resource" "create_jenkins_namespace" {
@@ -52,7 +52,7 @@ resource "null_resource" "create_jenkins_namespace" {
   }
 }
 
-resource "local_file" "ebs_volume_yaml" {
+resource "local_file" "ebs_volume_jenkins_yaml" {
   depends_on = [null_resource.create_jenkins_namespace]
 
   content  = <<EOF
@@ -76,22 +76,22 @@ spec:
               values:
                 - ap-northeast-2a
   awsElasticBlockStore:
-    volumeID: "${aws_ebs_volume.example.id}"
+    volumeID: "${aws_ebs_volume.jenkins.id}"
     fsType: ext4
 EOF
 
-  filename = "${path.module}/ebs-volume.yaml"
+  filename = "${path.module}/ebs-volume-jenkins.yaml"
 }
 
 resource "null_resource" "apply_kubernetes_manifest" {
   depends_on = [null_resource.create_jenkins_namespace, local_file.ebs_volume_yaml]
 
   provisioner "local-exec" {
-    command = "kubectl apply -f ${path.module}/ebs-volume.yaml -n jenkins"
+    command = "kubectl apply -f ${path.module}/ebs-volume-jenkins.yaml -n jenkins"
   }
 }
 
-resource "local_file" "ebs_volume_yaml_pvc" {
+resource "local_file" "ebs_volume_yaml-jenkins_pvc" {
   depends_on = [null_resource.create_jenkins_namespace]
 
   content  = <<EOF
@@ -109,14 +109,14 @@ spec:
       storage: 10Gi
 EOF
 
-  filename = "${path.module}/ebs-volume_pvc.yaml"
+  filename = "${path.module}/ebs-volume_pvc-jenkins.yaml"
 }
 
 resource "null_resource" "apply_kubernetes_manifest_pvc" {
   depends_on = [null_resource.create_jenkins_namespace, local_file.ebs_volume_yaml_pvc]
 
   provisioner "local-exec" {
-    command = "kubectl apply -f ${path.module}/ebs-volume_pvc.yaml -n jenkins"
+    command = "kubectl apply -f ${path.module}/ebs-volume_pvc-jenkins.yaml -n jenkins"
   }
 }
 
