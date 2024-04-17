@@ -496,7 +496,7 @@ resource "null_resource" "create_kpop_namespace" {
       always_run = "${null_resource.install_docker.id}"
     }
 }
-
+}
 resource "null_resource" "create_ecr_secret_kpop" {
   provisioner "local-exec" {
     command = <<-EOT
