@@ -492,8 +492,9 @@ command = <<-EOT
 resource "null_resource" "create_kpop_namespace" {
   provisioner "local-exec" {
     command = "kubectl create ns kpop"
-    depends_on = [null_resource.install_docker]
-  }
+    triggers = {
+      always_run = "${null_resource.install_docker.id}"
+    }
 }
 
 resource "null_resource" "create_ecr_secret_kpop" {
@@ -506,10 +507,11 @@ resource "null_resource" "create_ecr_secret_kpop" {
       kubectl create secret docker-registry ecr-registry-secret \
         --docker-server=553186839963.dkr.ecr.ap-northeast-2.amazonaws.com \
         --docker-username=AWS \
-        --docker-password=${ecr_token} \
+        --docker-password=${var.ecr_token} \
         -n kpop
     EOT
-    depends_on = [null_resource.create_kpop_namespace]
+    triggers = {
+    always_run = "${null_resource.create_kpop_namespace.id}"
   }
 }
 
@@ -523,9 +525,10 @@ resource "null_resource" "create_ecr_secret_jenkins" {
       kubectl create secret docker-registry ecr-registry-secret \
         --docker-server=553186839963.dkr.ecr.ap-northeast-2.amazonaws.com \
         --docker-username=AWS \
-        --docker-password=${ecr_token} \
+        --docker-password=${var.ecr_token} \
         -n jenkins
     EOT
-    depends_on = [null_resource.create_kpop_namespace]
+     triggers = {
+    always_run = "${null_resource.create_kpop_namespace.id}"
   }
 }
