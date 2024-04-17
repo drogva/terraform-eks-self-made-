@@ -470,10 +470,9 @@ resource "null_resource" "apply_argocd_rbac" {
 }
 
 resource "null_resource" "install_docker" {
-   depends_on = [null_resource.apply_argocd_rbac]
-provisioner "local-exec" {
-    
-command = <<-EOT
+  depends_on = [null_resource.apply_argocd_rbac]
+  provisioner "local-exec" {
+    command = <<-EOT
       # Docker 설치
       sudo yum -y install docker
 
@@ -492,11 +491,10 @@ command = <<-EOT
 resource "null_resource" "create_kpop_namespace" {
   provisioner "local-exec" {
     command = "kubectl create ns kpop"
-    triggers = {
-      always_run = "${null_resource.install_docker.id}"
-    }
+  }
+  depends_on = [null_resource.install_docker]
 }
-}
+
 resource "null_resource" "create_ecr_secret_kpop" {
   provisioner "local-exec" {
     command = <<-EOT
@@ -507,13 +505,11 @@ resource "null_resource" "create_ecr_secret_kpop" {
       kubectl create secret docker-registry ecr-registry-secret \
         --docker-server=553186839963.dkr.ecr.ap-northeast-2.amazonaws.com \
         --docker-username=AWS \
-        --docker-password=${var.ecr_token} \
+        --docker-password=${ecr_token} \
         -n kpop
     EOT
-    triggers = {
-    always_run = "${null_resource.create_kpop_namespace.id}"
   }
- }
+  depends_on = [null_resource.create_kpop_namespace]
 }
 
 resource "null_resource" "create_ecr_secret_jenkins" {
@@ -526,11 +522,10 @@ resource "null_resource" "create_ecr_secret_jenkins" {
       kubectl create secret docker-registry ecr-registry-secret \
         --docker-server=553186839963.dkr.ecr.ap-northeast-2.amazonaws.com \
         --docker-username=AWS \
-        --docker-password=${var.ecr_token} \
+        --docker-password=${ecr_token} \
         -n jenkins
     EOT
-     triggers = {
-    always_run = "${null_resource.create_kpop_namespace.id}"
   }
+  depends_on = [null_resource.create_kpop_namespace]
 }
-}
+
