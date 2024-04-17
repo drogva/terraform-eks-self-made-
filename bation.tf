@@ -469,3 +469,57 @@ resource "null_resource" "apply_argocd_rbac" {
   }
 }
 
+resource "null_resource" "install_docker" {
+ depends_on = [null_resource.apply_argocd_rbac]
+  provisioner "local-exec" {
+    command = <<-EOT
+      # Docker 설치
+      sudo yum -y install docker
+      
+      # Docker 서비스 실행
+      sudo service docker start
+      
+      # 현재 사용자를 docker 그룹에 추가
+      sudo usermod -aG docker ${USER}
+      
+    
+    EOT
+  }
+}
+
+resource "null_resource" "create_kpop_namespace" {
+  provisioner "local-exec" {
+    command   = "kubectl create ns kpop"
+    depends_on = [null_resource.install_docker]
+  }
+}
+
+resource "null_resource" "create_ecr_secret_kpop" {
+  provisioner "local-exec" {
+    command   = <<-EOT
+      ecr_token=$(aws ecr get-authorization-token --region ap-northeast-2 --output text --query 'authorizationData[].authorizationToken' | base64 -d | cut -d: -f2)
+      kubectl create secret docker-registry ecr-registry-secret \
+        --docker-server={my_ecr_url} \
+        --docker-username=AWS \
+        --docker-password=${ecr_token} \
+        -n kpop
+    EOT
+    depends_on = [null_resource.create_kpop_namespace]
+  }
+}
+
+
+
+resource "null_resource" "create_ecr_secret_jenkins" {
+  provisioner "local-exec" {
+    command   = <<-EOT
+      ecr_token=$(aws ecr get-authorization-token --region ap-northeast-2 --output text --query 'authorizationData[].authorizationToken' | base64 -d | cut -d: -f2)
+      kubectl create secret docker-registry ecr-registry-secret \
+        --docker-server={my_ecr_url} \
+        --docker-username=AWS \
+        --docker-password=${ecr_token} \
+        -n jenkins
+    EOT
+    depends_on = [null_resource.install_docker]
+  }
+}
