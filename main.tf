@@ -14,12 +14,20 @@ module "eks" {
     aws = aws.ap-northeast-2
   }
 
+resource "aws_iam_role_policy_attachment" "additional" {
+  for_each = module.eks.eks_managed_node_groups
+
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
+  role       = each.value.iam_role_name
+}
+
+
+
 eks_managed_node_group_defaults = {
   ami_type = "AL2_x86_64"
   instance_type = "t3.small"
   update_launch_template_default_version = true
-  iam_role_additional_policies = {
-    default = ["arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"]
+ 
   }
 }
 
@@ -31,8 +39,7 @@ eks_managed_node_groups = {
     max_size      = 3
     desired_size  = 2
     ami_type      = "AL2_x86_64"
-    iam_role_additional_policies = {
-      default = ["arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"]
+  
     }
   }
   two = {
@@ -42,8 +49,7 @@ eks_managed_node_groups = {
     max_size      = 2
     desired_size  = 1
     ami_type      = "AL2_x86_64"
-   iam_role_additional_policies = {
-      default = ["arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"]
+  
     }
   }
 }
