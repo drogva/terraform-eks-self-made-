@@ -425,53 +425,11 @@ resource "null_resource" "restart_argo_deployments" {
   }
 }
 
-resource "null_resource" "patch_argo_accounts" {
-  depends_on = [null_resource.create_argo_namespace, null_resource.restart_argo_deployments]
-  provisioner "local-exec" {
-    command = "kubectl patch configmap argocd-cm -n argocd --type merge -p '{\"data\":{\"accounts.argo\":\"apiKey\"}}'"
 
-  }
-}
-
-
-
-
-
-
-resource "local_file" "argocd-rbac" {
-  depends_on = [null_resource.create_argo_namespace, local_file.ingress-argo_yaml, null_resource.patch_argo_accounts]
-  filename = "${path.module}/argocd-rbac.yml"
-  content = <<-EOT
-
-apiVersion: v1
-data:
-  policy.csv: |
-    g, argo, role:admin
-  policy.default: role:''
-kind: ConfigMap
-metadata:
-  name: argocd-rbac-cm
-  namespace: argocd
-
-
-
-
-EOT
-}
-
-resource "null_resource" "apply_argocd_rbac" {
-  depends_on = [local_file.argocd-rbac]
-
-  provisioner "local-exec" {
-    command = "kubectl apply -f ${path.module}/argocd-rbac.yml"
-
-
-  }
-}
 
 
 resource "null_resource" "install_docker" {
-  depends_on = [null_resource.apply_argocd_rbac]
+  depends_on = [null_resource.restart_argo_deployments]
   provisioner "local-exec" {
     command = <<-EOT
       # Docker 설치
@@ -536,3 +494,46 @@ resource "null_resource" "create_ecr_secret_jenkins" {
   depends_on = [null_resource.create_kpop_namespace]
 }
 
+resource "null_resource" "patch_argo_accounts" {
+  depends_on = [null_resource.create_ecr_secret_jenkins]
+  provisioner "local-exec" {
+    command = "kubectl patch configmap argocd-cm -n argocd --type merge -p '{\"data\":{\"accounts.argo\":\"apiKey\"}}'"
+
+  }
+}
+
+
+
+
+
+
+resource "local_file" "argocd-rbac" {
+  depends_on = [null_resource.patch_argo_accounts]
+  filename = "${path.module}/argocd-rbac.yml"
+  content = <<-EOT
+
+apiVersion: v1
+data:
+  policy.csv: |
+    g, argo, role:admin
+  policy.default: role:''
+kind: ConfigMap
+metadata:
+  name: argocd-rbac-cm
+  namespace: argocd
+
+
+
+
+EOT
+}
+
+resource "null_resource" "apply_argocd_rbac" {
+  depends_on = [local_file.argocd-rbac]
+
+  provisioner "local-exec" {
+    command = "kubectl apply -f ${path.module}/argocd-rbac.yml"
+
+
+  }
+}
