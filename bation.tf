@@ -469,6 +469,7 @@ resource "null_resource" "apply_argocd_rbac" {
   }
 }
 
+
 resource "null_resource" "install_docker" {
   depends_on = [null_resource.apply_argocd_rbac]
   provisioner "local-exec" {
@@ -498,15 +499,18 @@ resource "null_resource" "create_kpop_namespace" {
 resource "null_resource" "create_ecr_secret_kpop" {
   provisioner "local-exec" {
     command = <<-EOT
-      # AWS ECR 인증 토큰을 가져옵니다.
-      ecr_token=$(aws ecr get-login-password --region ap-northeast-2)
+      # 스크립트 파일을 만듭니다.
+      echo "#!/bin/bash" > create_ecr_secret_kpop.sh
+      echo "ecr_token=\$(aws ecr get-login-password --region ap-northeast-2)" >> create_ecr_secret_kpop.sh
+      echo "kubectl create secret docker-registry ecr-registry-secret \\" >> create_ecr_secret_kpop.sh
+      echo "  --docker-server=553186839963.dkr.ecr.ap-northeast-2.amazonaws.com \\" >> create_ecr_secret_kpop.sh
+      echo "  --docker-username=AWS \\" >> create_ecr_secret_kpop.sh
+      echo "  --docker-password=\$ecr_token \\" >> create_ecr_secret_kpop.sh
+      echo "  -n kpop" >> create_ecr_secret_kpop.sh
 
-      # ECR 시크릿을 생성합니다.
-      kubectl create secret docker-registry ecr-registry-secret \
-        --docker-server=553186839963.dkr.ecr.ap-northeast-2.amazonaws.com \
-        --docker-username=AWS \
-        --docker-password=aws ecr get-login-password --region ap-northeast-2 \
-        -n kpop
+      # 스크립트 파일을 실행합니다.
+      chmod +x create_ecr_secret_kpop.sh
+      ./create_ecr_secret_kpop.sh
     EOT
   }
   depends_on = [null_resource.create_kpop_namespace]
@@ -515,15 +519,18 @@ resource "null_resource" "create_ecr_secret_kpop" {
 resource "null_resource" "create_ecr_secret_jenkins" {
   provisioner "local-exec" {
     command = <<-EOT
-      # AWS ECR 인증 토큰을 가져옵니다.
-      ecr_token=$(aws ecr get-login-password --region ap-northeast-2)
+      # 스크립트 파일을 만듭니다.
+      echo "#!/bin/bash" > create_ecr_secret_jenkins.sh
+      echo "ecr_token=\$(aws ecr get-login-password --region ap-northeast-2)" >> create_ecr_secret_jenkins.sh
+      echo "kubectl create secret docker-registry ecr-registry-secret \\" >> create_ecr_secret_jenkins.sh
+      echo "  --docker-server=553186839963.dkr.ecr.ap-northeast-2.amazonaws.com \\" >> create_ecr_secret_jenkins.sh
+      echo "  --docker-username=AWS \\" >> create_ecr_secret_jenkins.sh
+      echo "  --docker-password=\$ecr_token \\" >> create_ecr_secret_jenkins.sh
+      echo "  -n jenkins" >> create_ecr_secret_jenkins.sh
 
-      # ECR 시크릿을 생성합니다.
-      kubectl create secret docker-registry ecr-registry-secret \
-        --docker-server=553186839963.dkr.ecr.ap-northeast-2.amazonaws.com \
-        --docker-username=AWS \
-        --docker-password=aws ecr get-login-password --region ap-northeast-2 \
-        -n jenkins
+      # 스크립트 파일을 실행합니다.
+      chmod +x create_ecr_secret_jenkins.sh
+      ./create_ecr_secret_jenkins.sh
     EOT
   }
   depends_on = [null_resource.create_kpop_namespace]
