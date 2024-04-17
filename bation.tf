@@ -513,6 +513,7 @@ resource "null_resource" "create_ecr_secret_kpop" {
     triggers = {
     always_run = "${null_resource.create_kpop_namespace.id}"
   }
+ }
 }
 
 resource "null_resource" "create_ecr_secret_jenkins" {
