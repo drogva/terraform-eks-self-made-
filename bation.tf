@@ -505,7 +505,7 @@ resource "null_resource" "create_ecr_secret_kpop" {
       kubectl create secret docker-registry ecr-registry-secret \
         --docker-server=553186839963.dkr.ecr.ap-northeast-2.amazonaws.com \
         --docker-username=AWS \
-        --docker-password=${ecr_token} \
+        --docker-password=aws ecr get-login-password --region ap-northeast-2 \
         -n kpop
     EOT
   }
@@ -522,7 +522,7 @@ resource "null_resource" "create_ecr_secret_jenkins" {
       kubectl create secret docker-registry ecr-registry-secret \
         --docker-server=553186839963.dkr.ecr.ap-northeast-2.amazonaws.com \
         --docker-username=AWS \
-        --docker-password=${ecr_token} \
+        --docker-password=aws ecr get-login-password --region ap-northeast-2 \
         -n jenkins
     EOT
   }
