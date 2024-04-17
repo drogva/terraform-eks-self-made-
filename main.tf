@@ -1,3 +1,12 @@
+resource "aws_iam_role_policy_attachment" "additional" {
+  for_each = module.eks.eks_managed_node_groups
+
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
+  role       = each.value.iam_role_name
+}
+
+
+
 module "eks" {
   source = "terraform-aws-modules/eks/aws"
   version = "~> 20.0"
@@ -14,12 +23,7 @@ module "eks" {
     aws = aws.ap-northeast-2
   }
 
-resource "aws_iam_role_policy_attachment" "additional" {
-  for_each = module.eks.eks_managed_node_groups
 
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
-  role       = each.value.iam_role_name
-}
 
 
 
