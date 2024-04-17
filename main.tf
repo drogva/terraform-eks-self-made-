@@ -31,7 +31,9 @@ eks_managed_node_groups = {
     max_size      = 3
     desired_size  = 2
     ami_type      = "AL2_x86_64"
-    iam_role_additional_policies = {}
+    iam_role_additional_policies = {
+      default = ["arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"]
+    }
   }
   two = {
     name          = "node-group-2"
@@ -40,7 +42,9 @@ eks_managed_node_groups = {
     max_size      = 2
     desired_size  = 1
     ami_type      = "AL2_x86_64"
-    iam_role_additional_policies = {}
+   iam_role_additional_policies = {
+      default = ["arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"]
+    }
   }
 }
 
