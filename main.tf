@@ -15,7 +15,7 @@ module "eks" {
   }
 
   eks_managed_node_group_defaults = {
-  ami_type = "AL2_x86_64"
+  
   instance_type = "t3.small"
   update_launch_template_default_version = true
   iam_role_additional_policies = ["arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"]
