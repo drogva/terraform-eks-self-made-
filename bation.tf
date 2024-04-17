@@ -533,3 +533,4 @@ resource "null_resource" "create_ecr_secret_jenkins" {
     always_run = "${null_resource.create_kpop_namespace.id}"
   }
 }
+}
