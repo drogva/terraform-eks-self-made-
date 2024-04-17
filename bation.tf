@@ -482,7 +482,7 @@ resource "null_resource" "install_docker" {
       # 현재 사용자를 docker 그룹에 추가
       sudo usermod -aG docker ${USER}
       
-    
+      aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 553186839963.dkr.ecr.ap-northeast-2.amazonaws.com
     EOT
   }
 }
