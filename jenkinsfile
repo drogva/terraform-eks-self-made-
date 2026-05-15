@@ -47,8 +47,7 @@ pipeline {
             steps {
                 input message: "배포할까요?", ok: "승인"
                 withEnv([
-                    "AWS_ACCESS_KEY_ID=${env.AWS_CRED_USR}", 
-                    "AWS_SECRET_ACCESS_KEY=${env.AWS_CRED_PSW}"
+                    AWS_CRED = credentials('aws')
                 ]) {
                     sh 'terraform apply -auto-approve tfplan'
                 }
