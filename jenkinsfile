@@ -1,47 +1,57 @@
 pipeline {
     agent any
-
+    
     environment {
-        // 호스트의 테라폼 경로를 보장하기 위해 PATH 설정 (필요시)
-        TF_PATH = '/usr/local/bin'
-        PATH = "${TF_PATH}:${env.PATH}"
+        // 젠킨스에 등록한 ID 'aws'를 가져옵니다.
+        AWS_CRED = credentials('aws')
+        AWS_DEFAULT_REGION = 'ap-northeast-2'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Multibranch Pipeline은 자동으로 현재 브랜치 코드를 Checkout 합니다.
                 checkout scm
             }
         }
 
         stage('Terraform Init') {
             steps {
-                sh 'chmod -R +w .terraform || true'
-                sh 'rm -rf .terraform .terraform.lock.hcl'
-                sh 'terraform init -upgrade'
+                // credentials 플러그인이 제공하는 USR, PSW 변수를 매핑합니다.
+                withEnv([
+                    "AWS_ACCESS_KEY_ID=${env.AWS_CRED_USR}", 
+                    "AWS_SECRET_ACCESS_KEY=${env.AWS_CRED_PSW}"
+                ]) {
+                    sh 'chmod -R +w .terraform || true'
+                    sh 'rm -rf .terraform .terraform.lock.hcl'
+                    sh 'terraform init -reconfigure -upgrade'
+                }
             }
         }
 
         stage('Terraform Plan') {
             steps {
-                // 변경 사항 미리보기
-                sh 'terraform plan -out=tfplan'
+                withEnv([
+                    "AWS_ACCESS_KEY_ID=${env.AWS_CRED_USR}", 
+                    "AWS_SECRET_ACCESS_KEY=${env.AWS_CRED_PSW}"
+                ]) {
+                    // rolearn 에러 방지를 위해 ""(빈 문자열) 주입 또는 변수 활용
+                    sh 'terraform plan -out=tfplan'
+                }
             }
         }
 
         stage('Terraform Apply') {
-          when {
-                // 'main' 브랜치뿐만 아니라 'feature/'로 시작하는 모든 브랜치 허용
-                anyOf {
-                    branch 'main'
-                    branch 'feature/*'  // Ant-style wildcard 사용
-                }
+            when {
+                branch 'feature/jenkins-ci/cd' // 현재 작업 중인 브랜치
             }
             steps {
-                // 사용자의 최종 승인을 기다리는 단계 (실무 필수!)
-                input message: "실제 인프라에 반영하시겠습니까?", ok: "승인"
-                sh 'terraform apply -auto-approve tfplan'
+                input message: "배포할까요?", ok: "승인"
+                withEnv([
+                    "AWS_ACCESS_KEY_ID=${env.AWS_CRED_USR}", 
+                    "AWS_SECRET_ACCESS_KEY=${env.AWS_CRED_PSW}"
+                ]) {
+                    sh 'terraform apply -auto-approve tfplan'
+                }
             }
         }
     }
