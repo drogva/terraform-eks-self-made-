@@ -1,8 +1,8 @@
 module "ebs_csi_irsa" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts"
   version = "6.6.0"
 
-  role_name = "ebs-csi"
+  #role_name = "ebs-csi"
   attach_ebs_csi_policy = true
 
   oidc_providers = {
