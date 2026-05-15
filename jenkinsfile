@@ -30,10 +30,7 @@ pipeline {
 
         stage('Terraform Plan') {
             steps {
-                withEnv([
-                    "AWS_ACCESS_KEY_ID=${env.AWS_CRED_USR}", 
-                    "AWS_SECRET_ACCESS_KEY=${env.AWS_CRED_PSW}"
-                ]) {
+                withCredentials([aws(credentialsId: 'aws', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                     // rolearn 에러 방지를 위해 ""(빈 문자열) 주입 또는 변수 활용
                     sh 'terraform plan -out=tfplan'
                 }
