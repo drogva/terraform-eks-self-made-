@@ -1,0 +1,32 @@
+# AWS 프로바이더 (블록이므로 '=' 없음)
+provider "aws" {
+  region  = "ap-northeast-2"
+  alias   = "ap-northeast-2"
+  profile = var.profile
+}
+
+
+# Kubernetes 프로바이더 (블록이므로 '=' 없음)
+provider "kubernetes" {
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    command     = "aws"
+    args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
+  }
+}
+
+# Helm 프로바이더 (블록이므로 '=' 없음)
+provider "helm" {
+  # 중요: 내부의 kubernetes는 '인자(Argument)'이므로 '='를 사용함 (Helm 2.15.0 기준)
+  kubernetes  {
+    host                   = module.eks.cluster_endpoint
+    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+    exec  {
+      api_version = "client.authentication.k8s.io/v1beta1"
+      command     = "aws"
+      args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
+    }
+  }
+}

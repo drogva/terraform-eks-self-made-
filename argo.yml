@@ -1,0 +1,16 @@
+global:
+  image:
+    tag: "v2.10.5"
+server:
+  service:
+    type: LoadBalancer
+  insecure: true
+  basehref: /argocd
+  volumes:
+    - name: static-files
+      persistentVolumeClaim:
+        claimName: ${pvc_name}
+configs:
+  credentialTemplates:
+    admin:
+      apiKey: enabled
