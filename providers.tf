@@ -2,7 +2,7 @@
 provider "aws" {
   region  = "ap-northeast-2"
   alias   = "ap-northeast-2"
-  profile = var.profile
+  #profile = var.profile
 }
 
 
