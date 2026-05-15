@@ -17,7 +17,7 @@ resource "aws_eks_addon" "ebs-csi" {
   cluster_name             = module.eks.cluster_name
   addon_name               = "aws-ebs-csi-driver"
   
-  service_account_role_arn = module.ebs_csi_irsa.iam_role_arn
+  service_account_role_arn = module.ebs_csi_irsa.arn
   tags = {
     "eks_addon" = "ebs-csi"
     "terraform" = "true"

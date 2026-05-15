@@ -24,7 +24,7 @@ resource "kubernetes_service_account" "aws_load_balancer_controller" {
       "app.kubernetes.io/component" = "controller"
     }
     annotations = {
-      "eks.amazonaws.com/role-arn" = module.aws_load_balancer_controller_irsa_role.iam_role_arn
+      "eks.amazonaws.com/role-arn" = module.aws_load_balancer_controller_irsa_role.arn
       "eks.amazonaws.com/sts-regional-endpoints" = "true"
     }
   }
