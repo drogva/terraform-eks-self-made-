@@ -141,7 +141,7 @@ module "jenkins" {
 
   app = {
     name          = "jenkins"
-    version       = "5.1.5"
+    version       = "5.9.18"
     chart         = "jenkins"
     force_update  = true
     wait          = false
@@ -360,12 +360,12 @@ metadata:
   name: argocd-ingress
   namespace: argocd
   annotations:
-    kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-2:553186839963:certificate/0d8292fe-ec09-40f2-887e-769490eac5ba
     alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
 spec:
+  ingressClassName: alb
   rules:
   - host: argo.seunghobet.link
     http:
