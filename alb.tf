@@ -1,7 +1,8 @@
 
 module "aws_load_balancer_controller_irsa_role" {
-  source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  role_name = "aws-load-balancer-controller"
+  source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts"
+  version = "6.6.0"
+  #role_name = "aws-load-balancer-controller"
   attach_load_balancer_controller_policy = true
 
   oidc_providers = {
@@ -23,7 +24,7 @@ resource "kubernetes_service_account" "aws_load_balancer_controller" {
       "app.kubernetes.io/component" = "controller"
     }
     annotations = {
-      "eks.amazonaws.com/role-arn" = module.aws_load_balancer_controller_irsa_role.iam_role_arn
+      "eks.amazonaws.com/role-arn" = module.aws_load_balancer_controller_irsa_role.arn
       "eks.amazonaws.com/sts-regional-endpoints" = "true"
     }
   }

@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+    
+    environment {
+        // 젠킨스에 등록한 ID 'aws'를 가져옵니다.
+        AWS_CRED = credentials('aws')
+        AWS_DEFAULT_REGION = 'ap-northeast-2'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                // credentials 플러그인이 제공하는 USR, PSW 변수를 매핑합니다.
+                withEnv([
+                    "AWS_ACCESS_KEY_ID=${env.AWS_CRED_USR}", 
+                    "AWS_SECRET_ACCESS_KEY=${env.AWS_CRED_PSW}"
+                ]) {
+                    sh 'chmod -R +w .terraform || true'
+                    sh 'rm -rf .terraform .terraform.lock.hcl'
+                    sh 'terraform init -reconfigure -upgrade'
+                }
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                withCredentials([aws(credentialsId: 'aws', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    // rolearn 에러 방지를 위해 ""(빈 문자열) 주입 또는 변수 활용
+                    sh 'terraform plan -out=tfplan'
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            when {
+                branch 'feature/jenkins-ci/cd' // 현재 작업 중인 브랜치
+            }
+            steps {
+                input message: "배포할까요?", ok: "승인"
+                 withCredentials([aws(credentialsId: 'aws', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')])
+                 {
+                    sh 'terraform apply -auto-approve tfplan'
+                }
+            }
+        }
+    }
+}

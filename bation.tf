@@ -2,11 +2,19 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = ">=6.0.0"
     }
     local = {
       source  = "hashicorp/local"
       version = "2.5.1"
+    }
+     helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.15.0" # 기존 에러를 막기 위해 3.0 미만 버전으로 고정
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.0"
     }
   }
 }
@@ -133,7 +141,7 @@ module "jenkins" {
 
   app = {
     name          = "jenkins"
-    version       = "5.1.5"
+    version       = "5.9.18"
     chart         = "jenkins"
     force_update  = true
     wait          = false
@@ -183,7 +191,7 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-2:553186839963:certificate/a63aa8dd-b019-4ca6-b69c-1dce6e139bce
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-2:553186839963:certificate/13e598d9-dfff-493c-b875-cd31859fae65
     alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
 spec:
   ingressClassName: alb
@@ -352,12 +360,12 @@ metadata:
   name: argocd-ingress
   namespace: argocd
   annotations:
-    kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-2:553186839963:certificate/cc24040b-b31d-4674-bf59-c5564908cc6a
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-2:553186839963:certificate/0d8292fe-ec09-40f2-887e-769490eac5ba
     alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
 spec:
+  ingressClassName: alb
   rules:
   - host: argo.seunghobet.link
     http:
@@ -433,14 +441,22 @@ resource "null_resource" "install_docker" {
   provisioner "local-exec" {
     command = <<-EOT
       # Docker 설치
-      sudo yum -y install docker
+      sudo dnf remove -y podman buildah || true
+      sudo dnf install -y yum-utils
+      sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+      # 2. Docker CE 설치 (Rocky 9은 CentOS 리포지토리와 호환)
+      sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+      # 3. 서비스 시작 및 활성화
+      sudo systemctl enable --now docker
 
       # Docker 서비스 시작
       sudo service docker start
 
       # 현재 사용자를 docker 그룹에 추가
       sudo usermod -aG docker $(whoami)
-
+      export PATH=$PATH:/usr/local/bin
       # AWS ECR에 로그인
       aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 553186839963.dkr.ecr.ap-northeast-2.amazonaws.com
     EOT
