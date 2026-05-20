@@ -39,7 +39,7 @@ pipeline {
 
         stage('Terraform Apply') {
             when {
-                branch 'feature/jenkins-ci/cd' // 현재 작업 중인 브랜치
+                branch 'main' // 현재 작업 중인 브랜치
             }
             steps {
                 input message: "배포할까요?", ok: "승인"
